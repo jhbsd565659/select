@@ -6,33 +6,36 @@
 
 void usage() {
 	std::cout 
-		<< "select version 0.1.0" << std::endl
+		<< "select version 0.1.1" << std::endl
 		<< "" << std::endl
 		<< "usage:" << std::endl
-		<< "select [-d delimiter] number" << std::endl
+		<< "select [-a, [-d delimiter]] number" << std::endl
+		<< "" << std::endl
 		<< "number:" << std::endl
-		<< "  print nth column" << std::endl
+		<< "  print Nth column" << std::endl
+		<< "-d:" << std::endl
+		<< "  set delimiter character as column" << std::endl
+		<< "-a:" << std::endl
+		<< "  print all characters unless hit \\n" << std::endl
 	;
+	exit(EXIT_FAILURE);
 }
 
 int main(int argc, char ** argv) {
-	if(argc <= 1) {
-		usage();
-		return EXIT_FAILURE;
-	}
-	char cmd[4096] = {0};
+	if(argc <= 1) usage();
+	char cmd[4096] = {0}, d[1024] = {0};
 	char c = 0;
-	int n = 0, p = 0;
-	char d[1024] = {0};
-	int e = 0;
-	if(strcmp(argv[1], "-d") == 0 && argc == 4) {
-		sscanf(argv[2], "%s", d);
-		sscanf(argv[3], "%d", &p);
+	int n = 0, p = 0, e = 0;
+	bool l = false;
+	d[0] = ' ';
+	for(int i = 1; i < argc; ++i) {
+		if(strcmp(argv[i], "-d") == 0) {
+			if(argc < 4) usage();
+			sscanf(argv[i + 1], "%s", &d[0]);
+		}
+		if(strcmp(argv[i], "-a") == 0) l = true;
 	}
-	else {
-		sscanf(argv[1], "%d", &p);
-		d[0] = ' ';
-	}
+	sscanf(argv[argc - 1], "%d", &p);
 	while(scanf("%c", &c) != EOF) {
 		cmd[n++] = c;
 		if(c != '\n') continue;
@@ -47,7 +50,17 @@ int main(int argc, char ** argv) {
 				if(s) ++s;
 			}
 		}
-		if(s) puts(s);
+		if(s) {
+			auto a = strstr(s, d);
+			char r[4096] = {0};
+			if(a && ! l) {
+				memcpy(r, s, a - s);
+				puts(r);
+			}
+			else {
+				puts(s);
+			}
+		}
 		memset(cmd, 0, 4096);
 		n = 0;
 	}
